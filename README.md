@@ -1,6 +1,4 @@
-# i3 Spiral Tiling Daemon
-
-## How it works
+# How it works
 
 This application manages your i3 windows by organizing them in a **binary tree tiling layout**, creating a clean and efficient spiral pattern.
 
@@ -20,9 +18,7 @@ A conceptual example of the spiral binary tree layout:
 
 Each new window is inserted following the alternating split direction, expanding the spiral structure while keeping windows easily accessible.
 
----
-
-## Learn more
+### Learn more
 
 * [Tiling Window Manager Concepts](https://en.wikipedia.org/wiki/Tiling_window_manager)
 * [Binary Tree Layout in dwm](https://dwm.suckless.org/customisation/layouts/#spiral)
@@ -30,13 +26,13 @@ Each new window is inserted following the alternating split direction, expanding
 
 ---
 
-## Installation (Unix-like systems)
+## Installation
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/Rodr1goTavares/i3-sprial-tiling-daemon/refs/heads/main/scripts/install.sh | bash
 ```
 
----
+
 
 ## Usage
 
@@ -52,7 +48,7 @@ Or run manually:
 i3std
 ```
 
----
+
 
 ## Uninstall
 
