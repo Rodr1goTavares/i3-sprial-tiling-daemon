@@ -22,7 +22,7 @@ case "$OS" in
     *) echo "${RED}System not supported!${NC}" && exit 1 ;;
 esac
 
-GITHUB_REPO="SeuUsuario/SeuRepositorio" # <-- troque pelo seu repositório
+GITHUB_REPO="Rodr1goTavares/i3-spiral-tiling-daemon"
 URL="https://github.com/$GITHUB_REPO/releases/latest/download/$FILE"
 
 # Installation directory
