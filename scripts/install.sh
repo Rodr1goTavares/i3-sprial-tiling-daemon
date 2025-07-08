@@ -1,33 +1,78 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-set -e
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 
-BIN_NAME="i3_spiral_daemon"
-INSTALL_DIR="$HOME/.local/bin"
-PROFILE_FILES=("$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile")
+echo -e "${GREEN}"
+echo " ___           _        _ _ "
+echo "|_ _|_ __  ___| |_ __ _| | |"
+echo " | || '_ \/ __| __/ _\` | | |"
+echo " | || | | \__ \ || (_| | | |"
+echo "|___|_| |_|___/\__\__,_|_|_|"
+echo -e "${NC}"
 
-# Troque essa URL pela real do seu release (binário Linux x86_64)
-DOWNLOAD_URL="https://github.com/seuusuario/seurepositorio/releases/latest/download/$BIN_NAME-linux-amd64"
+# Detect OS and architecture
+OS=$(uname -s)
+ARCH=$(uname -m)
 
-echo "Baixando $BIN_NAME..."
-mkdir -p "$INSTALL_DIR"
-wget -q --show-progress -O "$INSTALL_DIR/$BIN_NAME" "$DOWNLOAD_URL"
-chmod +x "$INSTALL_DIR/$BIN_NAME"
+# Set binary name and URL
+case "$OS" in
+    Linux|Darwin) FILE="i3_spiral_daemon" ;;
+    *) echo "${RED}System not supported!${NC}" && exit 1 ;;
+esac
 
-echo "Configurando variável I3_SOCKET_PATH no perfil do usuário..."
+GITHUB_REPO="SeuUsuario/SeuRepositorio" # <-- troque pelo seu repositório
+URL="https://github.com/$GITHUB_REPO/releases/latest/download/$FILE"
 
-# Detecta shell e adiciona export de I3_SOCKET_PATH se não existir
-for profile in "${PROFILE_FILES[@]}"; do
-  if [ -f "$profile" ]; then
-    if ! grep -q "export I3_SOCKET_PATH=" "$profile"; then
-      echo "export I3_SOCKET_PATH=\$(i3 --get-socketpath)" >> "$profile"
-      echo "Adicionado export I3_SOCKET_PATH em $profile"
+# Installation directory
+BIN_DIR="$HOME/.local/bin"
+BIN_PATH="$BIN_DIR/$FILE"
+
+# Create directory if it doesn't exist
+mkdir -p "$BIN_DIR"
+
+# Download the binary
+echo "Downloading $FILE from $URL..."
+if ! wget -q --show-progress -O "$BIN_PATH" "$URL"; then
+    echo "${RED}❌ Download failed. Check your internet or the URL.${NC}"
+    exit 1
+fi
+
+# Make it executable
+if ! chmod +x "$BIN_PATH"; then
+    echo "${RED}❌ Failed to make the binary executable.${NC}"
+    exit 1
+fi
+
+# Check if the directory is in PATH
+if ! echo "$PATH" | grep -q "$BIN_DIR"; then
+    echo "${GREEN}Adding $BIN_DIR to PATH...${NC}"
+    case "$SHELL" in
+        */bash) echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc" ;;
+        */zsh)  echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc" ;;
+        */fish) echo 'set -Ux PATH $HOME/.local/bin $PATH' >> "$HOME/.config/fish/config.fish" ;;
+        *)      echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.profile" ;;
+    esac
+fi
+
+# Add I3_SOCKET_PATH export if missing
+EXPORT_CMD='export I3_SOCKET_PATH=$(i3 --get-socketpath)'
+ADDED_SOCKET_PATH=0
+for profile in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+    if [ -f "$profile" ]; then
+        if ! grep -q "I3_SOCKET_PATH=" "$profile"; then
+            echo "$EXPORT_CMD" >> "$profile"
+            ADDED_SOCKET_PATH=1
+        fi
     fi
-  fi
 done
 
-echo "Instalação concluída! Verifique se $INSTALL_DIR está no seu PATH."
-echo "Para aplicar a variável I3_SOCKET_PATH, reinicie seu terminal ou rode:"
-echo "source ~/.bashrc  # ou ~/.zshrc, ~/.profile conforme seu shell"
-echo "Execute o daemon com: $BIN_NAME"
+if [ $ADDED_SOCKET_PATH -eq 1 ]; then
+    echo "${GREEN}I3_SOCKET_PATH has been added to your shell profile.${NC}"
+else
+    echo "${GREEN}I3_SOCKET_PATH already configured in your environment.${NC}"
+fi
+
+echo -e "${GREEN}✅ Installation complete!"
 
